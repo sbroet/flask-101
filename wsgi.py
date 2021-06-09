@@ -1,12 +1,21 @@
 # wsgi.py
 # pylint: disable=missing-docstring
+# pylint: disable=missing-docstring
+# pylint: disable=too-few-public-methods
 
-from flask import Flask
-from flask import jsonify
+import itertools
+
+from flask import Flask, jsonify, abort, request
 app = Flask(__name__)
 
+# Prefix api path using a version number is really important to manage future breaking evolutions
+# This way, we can continue to offer the old service using /v1 url and offer the new one using /v2
+# We will remove /v1 api (and related code) when all our users will use /v2 url.
 BASE_URL = '/api/v1'
 
+# Remember this is only a really simple database simulation.
+# This data is only persisted in RAM : if you restart your server, modifications are lost.
+# Don't worry about this, our goal for today is to understand REST api, not to really persist data.
 PRODUCTS = {
     1: { 'id': 1, 'name': 'Skello' },
     2: { 'id': 2, 'name': 'Socialive.tv' },
@@ -18,10 +27,6 @@ START_INDEX = len(PRODUCTS) + 1
 IDENTIFIER_GENERATOR = itertools.count(START_INDEX)
 
 
-@app.route('/')
-def hello():
-    return "Hello World! this is a test 2"
-
 @app.route(f'{BASE_URL}/products', methods=['GET'])
 def read_many_products():
     products = list(PRODUCTS.values())
@@ -30,6 +35,7 @@ def read_many_products():
     # Cf: https://flask.palletsprojects.com/en/1.1.x/api/?highlight=response#flask.Response
     # By default, 2nd argument is 200 (but we want to be explicit while learning concepts)
     return jsonify(products), 200  # OK
+
 
 @app.route(f'{BASE_URL}/products/<int:product_id>', methods=['GET'])
 def read_one_product(product_id):
@@ -55,7 +61,8 @@ def delete_one_product(product_id):
     # Delete action (DELETE method) no need to return the entity since we removed this entity
     return '', 204  # No Content
 
-    # No product_id in create (POST method) url since it is the database which implements the id counter
+
+# No product_id in create (POST method) url since it is the database which implements the id counter
 # If api consumers could choose an id, it would lead to many erros :
 #  - race condition for a given id choosed by many users
 #  - how to know which is is not used for now
