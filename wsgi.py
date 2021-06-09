@@ -20,7 +20,7 @@ IDENTIFIER_GENERATOR = itertools.count(START_INDEX)
 
 @app.route('/')
 def hello():
-    return "Hello World! this is a test"
+    return "Hello World! this is a test 2"
 
 @app.route(f'{BASE_URL}/products', methods=['GET'])
 def read_many_products():
